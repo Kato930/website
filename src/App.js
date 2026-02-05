@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Lightbulb, Fan, Power, Activity } from 'lucide-react';
 
 function App() {
-  const [ledValue, setLedValue] = useState(0);
-  const [motorValue, setMotorValue] = useState(0);
-  const [isLedOn, setIsLedOn] = useState(false);
-  const [isMotorOn, setIsMotorOn] = useState(false);
+  const [states, setStates] = useState({
+    L1: 0, L2: 0, L3: 0, L4: 0, MA: 0, MB: 0
+  });
 
   const sendCommand = async (device, value) => {
     try {
@@ -15,227 +14,78 @@ function App() {
         body: JSON.stringify({ device, value: parseInt(value) })
       });
     } catch (err) {
-      console.warn("Backend connection failed. Run 'node server.js' first!");
+      console.warn("Backend offline.");
     }
   };
 
-  const handleLedToggle = () => {
-    const newValue = isLedOn ? 0 : 255;
-    setIsLedOn(!isLedOn);
-    setLedValue(newValue);
-    sendCommand('L', newValue);
-  };
-
-  const handleMotorToggle = () => {
-    const newValue = isMotorOn ? 0 : 255;
-    setIsMotorOn(!isMotorOn);
-    setMotorValue(newValue);
-    sendCommand('M', newValue);
-  };
-
-  const handleLedSlider = (e) => {
-    const val = e.target.value;
-    setLedValue(val);
-    setIsLedOn(val > 0);
-    sendCommand('L', val);
-  };
-
-  const handleMotorSlider = (e) => {
-    const val = e.target.value;
-    setMotorValue(val);
-    setIsMotorOn(val > 0);
-    sendCommand('M', val);
+  const handleUpdate = (device, val) => {
+    setStates(prev => ({ ...prev, [device]: val }));
+    sendCommand(device, val);
   };
 
   const styles = {
-    container: {
-      minHeight: '100vh',
-      backgroundColor: '#0f172a', 
-      color: 'white',
-      padding: '48px 24px',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: 'Inter, system-ui, sans-serif'
-    },
-    wrapper: {
-      maxWidth: '800px',
-      width: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '40px'
-    },
-    header: {
-      textAlign: 'center'
-    },
-    title: {
-      fontSize: '48px',
-      fontWeight: '900',
-      letterSpacing: '-2px',
-      color: '#818cf8', 
-      margin: 0
-    },
-    subtitle: {
-      color: '#64748b', 
-      fontSize: '12px',
-      fontWeight: 'bold',
-      textTransform: 'uppercase',
-      letterSpacing: '4px',
-      marginTop: '8px'
-    },
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-      gap: '32px'
-    },
-    card: {
-      backgroundColor: '#1e293b',
-      padding: '32px',
-      borderRadius: '40px',
-      border: '1px solid #334155',
-      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      flexDirection: 'column'
-    },
-    cardHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: '40px'
-    },
-    iconBox: (active, color) => ({
-      padding: '20px',
-      borderRadius: '24px',
-      transition: 'all 0.5s ease',
-      backgroundColor: active ? color : '#334155',
-      color: active ? 'white' : '#64748b',
-      boxShadow: active ? `0 0 40px ${color}66` : 'none'
-    }),
-    powerBtn: (active) => ({
-      padding: '16px',
-      borderRadius: '50%',
-      border: 'none',
-      cursor: 'pointer',
-      transition: 'all 0.2s',
-      backgroundColor: active ? '#6366f1' : '#334155',
-      color: 'white'
-    }),
-    valueLabel: {
-      fontSize: '10px',
-      fontWeight: '900',
-      textTransform: 'uppercase',
-      color: '#64748b',
-      letterSpacing: '2px',
-      marginBottom: '4px'
-    },
-    valueDisplay: (color) => ({
-      fontSize: '64px',
-      fontFamily: 'monospace',
-      fontWeight: '900',
-      color: color,
-      marginBottom: '32px'
-    }),
-    slider: {
-      width: '100%',
-      height: '12px',
-      borderRadius: '6px',
-      cursor: 'pointer',
-      accentColor: '#6366f1'
-    },
-    footer: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '16px',
-      backgroundColor: 'rgba(30, 41, 59, 0.4)',
-      padding: '20px',
-      borderRadius: '24px',
-      border: '1px solid rgba(51, 65, 85, 0.5)'
-    }
+    container: { minHeight: '100vh', backgroundColor: '#0f172a', color: 'white', padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: 'Inter, sans-serif' },
+    wrapper: { maxWidth: '1200px', width: '100%' },
+    header: { textAlign: 'center', marginBottom: '40px' },
+    title: { fontSize: '42px', fontWeight: '900', color: '#818cf8', margin: 0, letterSpacing: '-1px' },
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px' },
+    card: { backgroundColor: '#1e293b', padding: '25px', borderRadius: '35px', border: '1px solid #334155', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' },
+    iconRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+    iconBox: (val, color) => ({ padding: '15px', borderRadius: '20px', backgroundColor: val > 0 ? color : '#334155', color: 'white', transition: '0.3s' }),
+    valText: (color) => ({ fontSize: '32px', fontWeight: '900', color: color, margin: '10px 0' }),
+    label: { fontSize: '10px', fontWeight: '800', color: '#64748b', letterSpacing: '2px', textTransform: 'uppercase' },
+    slider: (color) => ({ width: '100%', accentColor: color, cursor: 'pointer' })
   };
+
+  const ControlCard = ({ id, label, icon: Icon, color, value }) => (
+    <div style={styles.card}>
+      <div style={styles.iconRow}>
+        <div style={styles.iconBox(value, color)}>
+          <Icon className={id.startsWith('M') && value > 0 ? 'animate-spin' : ''} />
+        </div>
+        <button 
+          onClick={() => handleUpdate(id, value > 0 ? 0 : 255)}
+          style={{ background: value > 0 ? color : '#334155', border: 'none', borderRadius: '50%', padding: '10px', cursor: 'pointer', color: 'white' }}
+        >
+          <Power size={18} />
+        </button>
+      </div>
+      <span style={styles.label}>{label}</span>
+      <div style={styles.valText(value > 0 ? color : '#475569')}>{Math.round((value/255)*100)}%</div>
+      <input 
+        type="range" min="0" max="255" value={value} 
+        style={styles.slider(color)}
+        onChange={(e) => handleUpdate(id, e.target.value)} 
+      />
+    </div>
+  );
 
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
-        
-        <header style={styles.header}>
-          <h1 style={styles.title}>SYSTEM COMMAND</h1>
-          <p style={styles.subtitle}>Active Device Control Center</p>
-        </header>
-
-        <div style={styles.grid}>
-          
-          <div style={styles.card}>
-            <div style={styles.cardHeader}>
-              <div style={styles.iconBox(isLedOn, '#eab308')}>
-                <Lightbulb size={40} />
-              </div>
-              <button onClick={handleLedToggle} style={styles.powerBtn(isLedOn)}>
-                <Power size={24} />
-              </button>
-            </div>
-            
-            <h2 style={styles.valueLabel}>LED Intensity</h2>
-            <div style={styles.valueDisplay('#818cf8')}>{Math.round((ledValue/255)*100)}%</div>
-            
-            <input 
-              type="range" min="0" max="255" value={ledValue}
-              onChange={handleLedSlider}
-              style={{...styles.slider, accentColor: '#818cf8'}}
-            />
-          </div>
-
-          <div style={styles.card}>
-            <div style={styles.cardHeader}>
-              <div style={styles.iconBox(isMotorOn, '#10b981')}>
-                <div style={{
-                  display: 'flex',
-                  animation: isMotorOn ? `spin ${Math.max(0.1, (256-motorValue)/50)}s linear infinite` : 'none'
-                }}>
-                  <Fan size={40} />
-                </div>
-              </div>
-              <button onClick={handleMotorToggle} style={styles.powerBtn(isMotorOn)}>
-                <Power size={24} />
-              </button>
-            </div>
-            
-            <h2 style={styles.valueLabel}>Motor Speed</h2>
-            <div style={styles.valueDisplay('#10b981')}>{Math.round((motorValue/255)*100)}%</div>
-            
-            <input 
-              type="range" min="0" max="255" value={motorValue}
-              onChange={handleMotorSlider}
-              style={{...styles.slider, accentColor: '#10b981'}}
-            />
-          </div>
-
+        <div style={styles.header}>
+          <h1 style={styles.title}>HEXA-CONTROL</h1>
+          <p style={{ color: '#64748b', fontWeight: 'bold' }}>INDIVIDUAL COMPONENT COMMAND</p>
         </div>
 
-        <footer style={styles.footer}>
-          <Activity size={18} color="#818cf8" />
-          <span style={{fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '4px', color: '#64748b'}}>
-            Serial Bridge Active • Localhost 5000
-          </span>
+        <div style={styles.grid}>
+          <ControlCard id="L1" label="LED - Pin 13" icon={Lightbulb} color="#eab308" value={states.L1} />
+          <ControlCard id="L2" label="LED - Pin 12" icon={Lightbulb} color="#eab308" value={states.L2} />
+          <ControlCard id="L3" label="LED - Pin 8" icon={Lightbulb} color="#eab308" value={states.L3} />
+          <ControlCard id="L4" label="LED - Pin 7" icon={Lightbulb} color="#eab308" value={states.L4} />
+          <ControlCard id="MA" label="Motor A - Speed" icon={Fan} color="#10b981" value={states.MA} />
+          <ControlCard id="MB" label="Motor B - Speed" icon={Fan} color="#3b82f6" value={states.MB} />
+        </div>
+
+        <footer style={{ marginTop: '50px', display: 'flex', gap: '10px', alignItems: 'center', justifyContent: 'center', opacity: 0.4 }}>
+          <Activity size={16} /> <span style={{ fontSize: '10px', letterSpacing: '2px' }}>SYSTEMS NOMINAL • LOCALHOST:5000</span>
         </footer>
-
-        <style>
-          {`
-            body, html {
-              margin: 0;
-              padding: 0;
-              background-color: #0f172a; /* Matches the slate-900 theme */
-              overflow-x: hidden;
-            }
-
-            @keyframes spin {
-              from { transform: rotate(0deg); }
-              to { transform: rotate(360deg); }
-            }
-          `}
-        </style>
       </div>
+      <style>{`
+        body, html { margin: 0; padding: 0; background: #0f172a; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+      `}</style>
     </div>
   );
 }
