@@ -64,8 +64,8 @@ function App() {
     <div style={styles.container}>
       <div style={styles.wrapper}>
         <div style={styles.header}>
-          <h1 style={styles.title}>HEXA-CONTROL</h1>
-          <p style={{ color: '#64748b', fontWeight: 'bold' }}>INDIVIDUAL COMPONENT COMMAND</p>
+          <h1 style={styles.title}>SMART-HOME</h1>
+          <p style={{ color: '#64748b', fontWeight: 'bold' }}>CONTROL</p>
         </div>
 
         <div style={styles.grid}>
